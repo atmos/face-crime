@@ -85,7 +85,7 @@ class FaceDetectionDelegate
     exit(1)
   end
 
-  def overylay
+  def overlay
     @overlay ||= NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("https://raw.github.com/botriot/faceup/master/overlays/#{template}.png")
   end
 
