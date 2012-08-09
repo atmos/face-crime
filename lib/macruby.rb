@@ -1,3 +1,5 @@
+require 'optparse'
+
 framework 'Cocoa'
 framework 'CoreGraphics'
 
@@ -46,24 +48,19 @@ class NSImage
 end
 
 class FaceDetectionDelegate
-  attr_accessor :window
+  attr_accessor :window, :output, :input
 
-  def initWithURL(url)
-    case url
-    when String
-      @photo_url = NSURL.URLWithString(url)
-    when NSURL
-      @photo_url = url
-    else
-      raise "The FaceDetectionDelegate class was initiated with an unknown type object"
-    end
+  def initWithURL(options)
+    @input  = NSURL.URLWithString(options['input'])
+    @output = options['output']
+
     self
   end
 
   def applicationDidFinishLaunching(aNotification)
     window.delegate = self
-    puts "Fetching and loading the image #{@photo_url.absoluteString}"
-    image = NSImage.alloc.initWithContentsOfURL @photo_url
+    puts "Fetching and loading the image #{input.absoluteString}"
+    image = NSImage.alloc.initWithContentsOfURL input
 
     @rohan    = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("https://raw.github.com/botriot/faceup/master/overlays/rohan.png")
 
@@ -93,13 +90,9 @@ class FaceDetectionDelegate
     window.contentView.layer.renderInContext(context.graphicsPort)
     image_data = image_rep.representationUsingType(NSPNGFileType, properties:nil)
 
-    # Writes a white image
-    #window.contentView.lockFocus
-    #image_rep = NSBitmapImageRep.alloc.initWithFocusedViewRect(window.contentView.frame)
-    #window.contentView.unlockFocus
-    #image_data = image_rep.representationUsingType(NSPNGFileType, properties:nil)
+    image_data.writeToFile(output, atomically:true)
 
-    image_data.writeToFile("rohan.png", atomically:true)
+    puts "Wrote #{output}"
     exit(1)
   end
 
@@ -157,10 +150,33 @@ class FaceDetectionDelegate
   def windowWillClose(sender); exit(1); end
 end
 
+options = { }
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: heaven [options]"
+
+  opts.on( '-i', '--input URL', 'A URL of an image file to render') do |input|
+    options['input'] = input
+  end
+
+  opts.on( '-o', '--output FILE', 'File on disk to save to') do |output|
+    options['output'] = output
+  end
+
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
+end
+
+optparse.parse!
+
+raise OptionParser::MissingArgument if(options['input'].nil? || options['output'].nil?)
+
 # Create the Application
 application = NSApplication.sharedApplication
 NSApplication.sharedApplication.activationPolicy = NSApplicationActivationPolicyRegular
-application.delegate = FaceDetectionDelegate.alloc.initWithURL(ARGV.shift || "http://merbist.com/wp-content/uploads/2010/03/matz_koichi_matt_aimonetti_sansonetti_jimmy.jpg")
+application.delegate = FaceDetectionDelegate.alloc.initWithURL(options)
 
 # create the Application Window
 frame = [0.0, 0.0, 640, 480]
@@ -171,6 +187,5 @@ window = NSWindow.alloc.initWithContentRect frame,
 
 application.delegate.window = window
 window.orderOut(nil)
-window.display
 puts "Starting the app..."
 application.run
