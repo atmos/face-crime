@@ -91,7 +91,6 @@ class FaceDetectionDelegate
     detect_faces
     window.orderFrontRegardless
 
-    # Works but missing stuff added in detect_faces
     image_rep = imageView.bitmapImageRepForCachingDisplayInRect(imageView.visibleRect)
     context = NSGraphicsContext.graphicsContextWithBitmapImageRep(image_rep)
     window.contentView.layer.renderInContext(context.graphicsPort)
