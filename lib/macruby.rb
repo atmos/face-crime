@@ -66,9 +66,8 @@ class FaceDetectionDelegate
     window.delegate = self
     puts "Fetching and loading the image #{@photo_url.absoluteString}"
     image = NSImage.alloc.initWithContentsOfURL @photo_url
-    @mustache = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("http://dl.dropbox.com/u/349788/mustache.png")
-    @hat = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("http://dl.dropbox.com/u/349788/hat.png")
-    @glasses = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("http://dl.dropbox.com/u/349788/glasses.png")
+
+    @rohan    = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("https://raw.github.com/botriot/faceup/master/overlays/rohan.png")
 
     # Helpers to set the NSImageView size
     bitmap = NSBitmapImageRep.imageRepWithData image.TIFFRepresentation
@@ -91,8 +90,22 @@ class FaceDetectionDelegate
     window.contentView.addSubview(imageView)
     detect_faces
     window.orderFrontRegardless
-  end
 
+    # Works but missing stuff added in detect_faces
+    imageView.image.lockFocus
+    image_rep = NSBitmapImageRep.alloc.initWithFocusedViewRect(imageView.frame)
+    imageView.image.unlockFocus
+    image_data = image_rep.representationUsingType(NSPNGFileType, properties:nil)
+
+    # Writes a white image
+    #window.contentView.lockFocus
+    #image_rep = NSBitmapImageRep.alloc.initWithFocusedViewRect(window.contentView.frame)
+    #window.contentView.unlockFocus
+    #image_data = image_rep.representationUsingType(NSPNGFileType, properties:nil)
+
+    image_data.writeToFile("rohan.png", atomically:true)
+    exit(1)
+  end
 
   def detect_faces
     ciImage = CIImage.imageWithCGImage window.contentView.subviews.last.image.to_CGImage
@@ -126,58 +139,26 @@ class FaceDetectionDelegate
       end
 
       if (feature.hasMouthPosition and feature.hasLeftEyePosition and feature.hasRightEyePosition)
+        rohanView = NSImageView.alloc.init
+        rohanView.image = @rohan
+        rohanView.imageFrameStyle = NSImageFrameNone
+        rohanView.imageScaling = NSScaleProportionally
 
-        #mustache
-        mustacheView = NSImageView.alloc.init
-        mustacheView.image = @mustache
-        mustacheView.imageFrameStyle = NSImageFrameNone
-        mustacheView.imageScaling = NSScaleProportionally
-
-        w = feature.bounds.size.width
-        h = feature.bounds.size.height/5
-        x = (feature.mouthPosition.x + (feature.leftEyePosition.x + feature.rightEyePosition.x)/2)/2 - w/2
-        y = feature.mouthPosition.y
-        mustacheView.frame = NSMakeRect(x, y, w, h)
-        mustacheView.frameCenterRotation = Math.atan2(feature.rightEyePosition.y-feature.leftEyePosition.y,feature.rightEyePosition.x-feature.leftEyePosition.x)*180/Math::PI
-
-        window.contentView.addSubview(mustacheView)
-
-        hatView = NSImageView.alloc.init
-        hatView.image = @hat
-        hatView.imageFrameStyle = NSImageFrameNone
-        hatView.imageScaling = NSScaleProportionally
-
-        #hat
+        #w = feature.bounds.size.width
+        #h = feature.bounds.size.height/2
         w = feature.bounds.size.width*5/4
         h = feature.bounds.size.height*5/4
-        x = (feature.rightEyePosition.x + feature.leftEyePosition.x + feature.mouthPosition.x)/3 - w/2
-        y = (feature.rightEyePosition.y + feature.leftEyePosition.y)/2 - h/7
-        hatView.frame = NSMakeRect(x, y, w, h)
-        hatView.frameCenterRotation = 25 + Math.atan2(feature.rightEyePosition.y-feature.leftEyePosition.y,feature.rightEyePosition.x-feature.leftEyePosition.x)*180/Math::PI
-
-        window.contentView.addSubview(hatView)
-
-        #glasses
-        glassesView = NSImageView.alloc.init
-        glassesView.image = @glasses
-        glassesView.imageFrameStyle = NSImageFrameNone
-        glassesView.imageScaling = NSScaleProportionally
-
-        w = feature.bounds.size.width
-        h = feature.bounds.size.height/2
         x = (feature.rightEyePosition.x + feature.leftEyePosition.x)/2 - w/2
         y = (feature.rightEyePosition.y + feature.leftEyePosition.y)/2 - h/2
-        glassesView.frame = NSMakeRect(x, y, w, h)
-        glassesView.frameCenterRotation = Math.atan2(feature.rightEyePosition.y-feature.leftEyePosition.y,feature.rightEyePosition.x-feature.leftEyePosition.x)*180/Math::PI
+        rohanView.frame = NSMakeRect(x, y, w, h)
+        rohanView.frameCenterRotation = Math.atan2(feature.rightEyePosition.y-feature.leftEyePosition.y,feature.rightEyePosition.x-feature.leftEyePosition.x)*180/Math::PI
 
-        window.contentView.addSubview(glassesView)
-
+        window.contentView.addSubview(rohanView)
       end
     end
   end
 
   def windowWillClose(sender); exit(1); end
-
 end
 
 # Create the Application
@@ -186,7 +167,7 @@ NSApplication.sharedApplication.activationPolicy = NSApplicationActivationPolicy
 application.delegate = FaceDetectionDelegate.alloc.initWithURL(ARGV.shift || "http://merbist.com/wp-content/uploads/2010/03/matz_koichi_matt_aimonetti_sansonetti_jimmy.jpg")
 
 # create the Application Window
-frame = [0.0, 0.0, 330, 250]
+frame = [0.0, 0.0, 640, 480]
 window = NSWindow.alloc.initWithContentRect frame,
   styleMask: NSTitledWindowMask | NSClosableWindowMask,
   backing: NSBackingStoreBuffered,
