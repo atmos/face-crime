@@ -6,14 +6,6 @@ framework 'CoreGraphics'
 class NSColor
   def toCGColor
     color_RGB = colorUsingColorSpaceName(NSCalibratedRGBColorSpace)
-    ## approach #1
-    # components = Array.new(4){Pointer.new(:double)}
-    # color_RGB.getRed(components[0],
-    #                 green: components[1],
-    #                 blue: components[2],
-    #                 alpha:components[3])
-    # components.collect!{|x| x[0] }
-    # approach #2
     components = [redComponent, greenComponent, blueComponent, alphaComponent]
 
     color_space = CGColorSpaceCreateWithName(KCGColorSpaceGenericRGB)
@@ -25,7 +17,6 @@ end
 
 # NSVIew set background color & and set center
 class NSView
-
   # set background like on IOS
   def background_color=(color)
     self.wantsLayer = true # // view's backing store is using a Core Animation Layer
@@ -48,12 +39,12 @@ class NSImage
 end
 
 class FaceDetectionDelegate
-  attr_accessor :window, :output, :input
+  attr_accessor :window, :output, :input, :template
 
   def initWithURL(options)
-    @input  = NSURL.URLWithString(options['input'])
-    @output = options['output']
-
+    @input    = NSURL.URLWithString(options['input'])
+    @output   = options['output']
+    @template = options['template']
     self
   end
 
@@ -61,8 +52,6 @@ class FaceDetectionDelegate
     window.delegate = self
     puts "Fetching and loading the image #{input.absoluteString}"
     image = NSImage.alloc.initWithContentsOfURL input
-
-    @rohan    = NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("https://raw.github.com/botriot/faceup/master/overlays/rohan.png")
 
     # Helpers to set the NSImageView size
     bitmap = NSBitmapImageRep.imageRepWithData image.TIFFRepresentation
@@ -94,6 +83,10 @@ class FaceDetectionDelegate
 
     puts "Wrote #{output}"
     exit(1)
+  end
+
+  def overylay
+    @overlay ||= NSImage.alloc.initWithContentsOfURL NSURL.URLWithString("https://raw.github.com/botriot/faceup/master/overlays/#{template}.png")
   end
 
   def detect_faces
@@ -129,7 +122,7 @@ class FaceDetectionDelegate
 
       if (feature.hasMouthPosition and feature.hasLeftEyePosition and feature.hasRightEyePosition)
         rohanView = NSImageView.alloc.init
-        rohanView.image = @rohan
+        rohanView.image = overlay
         rohanView.imageFrameStyle = NSImageFrameNone
         rohanView.imageScaling = NSScaleProportionally
 
@@ -150,7 +143,7 @@ class FaceDetectionDelegate
   def windowWillClose(sender); exit(1); end
 end
 
-options = { }
+options = { 'template' => 'rohan' }
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: heaven [options]"
@@ -161,6 +154,10 @@ optparse = OptionParser.new do |opts|
 
   opts.on( '-o', '--output FILE', 'File on disk to save to') do |output|
     options['output'] = output
+  end
+
+  opts.on( '-t', '--template TEMPLATE', 'What to overlay on the face') do |template|
+    options['template'] = template
   end
 
   opts.on( '-h', '--help', 'Display this screen' ) do
