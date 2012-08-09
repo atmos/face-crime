@@ -78,9 +78,9 @@ class FaceDetectionDelegate
     imageView.wantsLayer = true
     imageView.imageScaling = NSImageScaleProportionallyUpOrDown
     imageView.layer.affineTransform = CGAffineTransformMakeScale(-1, 1)
-    imageView.imageFrameStyle = NSImageFramePhoto
+    imageView.imageFrameStyle = NSImageFrameNone
 
-    window.setFrame([0.0, 0.0, (bitmap.pixelsWide+20), (bitmap.pixelsHigh+20)], display:true, animate:true)
+    window.setFrame([0.0, 0.0, bitmap.pixelsWide, bitmap.pixelsHigh], display:true, animate:true)
     window.center
 
     window.contentView.wantsLayer = true
