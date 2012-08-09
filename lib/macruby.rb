@@ -92,9 +92,9 @@ class FaceDetectionDelegate
     window.orderFrontRegardless
 
     # Works but missing stuff added in detect_faces
-    imageView.image.lockFocus
-    image_rep = NSBitmapImageRep.alloc.initWithFocusedViewRect(imageView.frame)
-    imageView.image.unlockFocus
+    image_rep = imageView.bitmapImageRepForCachingDisplayInRect(imageView.visibleRect)
+    context = NSGraphicsContext.graphicsContextWithBitmapImageRep(image_rep)
+    window.contentView.layer.renderInContext(context.graphicsPort)
     image_data = image_rep.representationUsingType(NSPNGFileType, properties:nil)
 
     # Writes a white image
