@@ -26,10 +26,8 @@ class NSView
 
   # set background like on IOS
   def background_color=(color)
-    viewLayer = CALayer.layer
-    viewLayer.backgroundColor = color.toCGColor
     self.wantsLayer = true # // view's backing store is using a Core Animation Layer
-    self.layer = viewLayer
+    self.layer.backgroundColor = color.CGColor
   end
 
   # helper to set nsview center like on IOS
@@ -89,7 +87,6 @@ class FaceDetectionDelegate
     imageView.frame = CGRectMake(0.0, 0.0, bitmap.pixelsWide, bitmap.pixelsHigh)
     window.contentView.addSubview(imageView)
     detect_faces
-    window.orderFrontRegardless
 
     image_rep = imageView.bitmapImageRepForCachingDisplayInRect(imageView.visibleRect)
     context = NSGraphicsContext.graphicsContextWithBitmapImageRep(image_rep)
