@@ -1,0 +1,3 @@
+#!/usr/bin/env macruby
+
+require File.expand_path("../lib/macruby", File.dirname(__FILE__))

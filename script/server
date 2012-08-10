@@ -1,4 +1,0 @@
-#!/usr/bin/env macruby
-
-require "./lib/macruby"
-
