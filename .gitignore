@@ -1,3 +1,6 @@
 rohan.png
 *.png
 tmp/*.png
+.bundle
+bin
+vendor
