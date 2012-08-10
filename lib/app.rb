@@ -45,5 +45,10 @@ class FaceCrime
       end
       send_file(full_output_file, {:filename => output_file, :stream => true, :type => 'image/png', :disposition => 'inline'})
     end
+
+    get '/status' do
+      status 200
+      "OK"
+    end
   end
 end
