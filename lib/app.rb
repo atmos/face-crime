@@ -55,3 +55,9 @@ class FaceCrime
     end
   end
 end
+
+class NilClass
+  def close
+    nil
+  end
+end
