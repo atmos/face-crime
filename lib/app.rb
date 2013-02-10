@@ -34,9 +34,12 @@ class FaceCrime
         '-i', input_file,
         '-o', full_output_file
       ]
+      environ = {
+        'RUBYOPT' => ''
+      }
 
       unless File.exist?(full_output_file)
-        child  = POSIX::Spawn::Child.new(*args)
+        child  = POSIX::Spawn::Child.new(environ, *args)
         if child.status.success?
           status 200
         else
